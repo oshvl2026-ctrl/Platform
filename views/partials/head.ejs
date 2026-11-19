@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= typeof title !== 'undefined' ? title + ' | ' + site.name : site.name %></title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>:root{--brand:<%= site.brand %>}</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="logo" href="/"><i aria-hidden="true"></i><%= site.name %></a>
+  <nav class="nav" aria-label="Main">
+    <a href="/">Courses</a>
+    <% if (user) { %>
+      <a href="/my-courses">My learning</a>
+      <% if (user.role === 'admin') { %><a href="/admin">Admin</a><% } %>
+      <a href="/account">Account</a>
+      <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="linkbtn">Log out</button></form>
+    <% } else { %>
+      <a href="/login">Log in</a>
+      <a class="btn small" href="/signup">Sign up</a>
+    <% } %>
+  </nav>
+</div></header>

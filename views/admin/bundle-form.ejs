@@ -1,0 +1,20 @@
+<%- include('../partials/admin-top', { nav: '/admin/bundles' }) %>
+<p class="small"><a href="/admin/bundles">All bundles</a></p>
+<h1><%= isNew ? 'New bundle' : bundle.title %></h1>
+<form method="post" action="<%= isNew ? '/admin/bundles' : '/admin/bundles/' + bundle.id %>" class="panel" style="max-width:760px">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="field"><label for="title">Bundle name</label><input id="title" name="title" type="text" required value="<%= bundle.title || '' %>"></div>
+  <div class="field"><label for="d">Description <span class="hint">Supports Markdown</span></label><textarea id="d" name="description" rows="5"><%= bundle.description || '' %></textarea></div>
+  <div class="grid2">
+    <div class="field"><label for="pu">Price in USD (card)</label><input id="pu" name="price_usd" type="number" step="0.01" min="0" value="<%= (bundle.price_usd_cents || 0) / 100 %>"></div>
+    <div class="field"><label for="pe">Price in EGP (Paymob)</label><input id="pe" name="price_egp" type="number" step="0.01" min="0" value="<%= (bundle.price_egp_cents || 0) / 100 %>"></div>
+  </div>
+  <fieldset class="field" style="border:0;padding:0"><legend style="font-weight:700;margin-bottom:8px">Courses included</legend>
+    <% const inc = new Set(bundle.courses.map(c => c.id)); allCourses.forEach(c => { %><label class="check"><input type="checkbox" name="courses" value="<%= c.id %>" <%= inc.has(c.id) ? 'checked' : '' %>> <%= c.title %></label><% }) %>
+    <% if (!allCourses.length) { %><p class="muted">Create some courses first.</p><% } %>
+  </fieldset>
+  <label class="check field"><input type="checkbox" name="published" <%= bundle.published ? 'checked' : '' %>> Published (visible in the store)</label>
+  <button class="btn" name="action" value="save"><%= isNew ? 'Create bundle' : 'Save bundle' %></button>
+  <% if (!isNew) { %><button class="btn danger" name="action" value="delete" formnovalidate onclick="return confirm('Delete this bundle? Students who bought it keep their courses.')">Delete bundle</button><% } %>
+</form>
+<%- include('../partials/admin-bottom') %>

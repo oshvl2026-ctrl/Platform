@@ -1,0 +1,10 @@
+<%- include('head') %>
+<div class="admin">
+<nav aria-label="Admin">
+  <% const items = [['/admin','Dashboard'],['/admin/courses','Courses'],['/admin/bundles','Bundles'],['/admin/coupons','Coupons'],['/admin/orders','Orders'],['/admin/students','Students']]; %>
+  <% items.forEach(([href, label]) => { const isOn = typeof nav !== 'undefined' && nav === href; %><a href="<%= href %>" class="<%= isOn ? 'on' : '' %>"><%= label %></a><% }) %>
+  <div class="sep"></div>
+  <a href="/">View site</a>
+</nav>
+<section>
+<%- include('flash') %>

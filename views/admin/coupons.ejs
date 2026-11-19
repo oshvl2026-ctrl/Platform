@@ -1,0 +1,27 @@
+<%- include('../partials/admin-top', { nav: '/admin/coupons' }) %>
+<h1>Coupons</h1>
+<form method="post" action="/admin/coupons" class="panel" style="max-width:820px;margin-bottom:28px">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <h3>New coupon</h3>
+  <div class="grid2">
+    <div class="field"><label for="code">Code</label><input id="code" name="code" type="text" required placeholder="LAUNCH20" style="text-transform:uppercase"></div>
+    <div class="field"><label for="kind">Discount type</label><select id="kind" name="kind" onchange="document.querySelectorAll('[data-kind]').forEach(e => e.hidden = e.dataset.kind !== this.value)"><option value="percent">Percentage off</option><option value="fixed">Fixed amount off</option></select></div>
+  </div>
+  <div data-kind="percent" class="field" style="max-width:240px"><label for="po">Percent off <span class="hint">100 makes it free</span></label><input id="po" name="percent_off" type="number" min="1" max="100" value="20"></div>
+  <div data-kind="fixed" class="grid2" hidden><div class="field"><label for="au">Amount off in USD</label><input id="au" name="amount_usd" type="number" step="0.01" min="0"></div><div class="field"><label for="ae">Amount off in EGP</label><input id="ae" name="amount_egp" type="number" step="0.01" min="0"></div></div>
+  <div class="grid2">
+    <div class="field"><label for="at">Applies to</label><select id="at" name="applies_to"><option value="">Everything</option><% courses.forEach(c => { %><option value="course:<%= c.id %>"><%= c.title %></option><% }) %><% bundles.forEach(b => { %><option value="bundle:<%= b.id %>"><%= b.title %> (bundle)</option><% }) %></select></div>
+    <div class="field"><label for="mu">Usage limit <span class="hint">Leave blank for unlimited</span></label><input id="mu" name="max_uses" type="number" min="1"></div>
+  </div>
+  <div class="field" style="max-width:240px"><label for="ex">Expires on <span class="hint">Optional. Works through the end of this day</span></label><input id="ex" name="expires_at" type="date"></div>
+  <button class="btn">Create coupon</button>
+</form>
+<% if (coupons.length) { %>
+<div class="table"><table><thead><tr><th>Code</th><th>Discount</th><th>Applies to</th><th>Used</th><th>Expires</th><th>Status</th><th></th></tr></thead><tbody>
+<% coupons.forEach(c => { %><tr><td><strong><%= c.code %></strong></td>
+<td><%= c.kind === 'percent' ? c.percent_off + '%' : [c.amount_usd_cents ? money(c.amount_usd_cents,'USD') : null, c.amount_egp_cents ? money(c.amount_egp_cents,'EGP') : null].filter(Boolean).join(' / ') %></td>
+<td><%= c.item_type ? (names[c.item_type + ':' + c.item_id] || 'Deleted item') : 'Everything' %></td><td><%= c.uses %><%= c.max_uses ? ' / ' + c.max_uses : '' %></td><td><%= c.expires_at || '-' %></td>
+<td><span class="tag <%= c.active ? 'on' : '' %>"><%= c.active ? 'Active' : 'Paused' %></span></td>
+<td><form method="post" action="/admin/coupons/<%= c.id %>" class="row" style="gap:6px"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn small quiet" name="action" value="toggle"><%= c.active ? 'Pause' : 'Resume' %></button><button class="btn small danger" name="action" value="delete" onclick="return confirm('Delete this coupon?')">Delete</button></form></td></tr><% }) %>
+</tbody></table></div><% } %>
+<%- include('../partials/admin-bottom') %>

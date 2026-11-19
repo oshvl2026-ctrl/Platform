@@ -1,0 +1,14 @@
+<%- include('partials/head') %>
+<main><div class="wrap narrow">
+<h1>Verify a certificate</h1>
+<form method="get" action="/verify" class="row" style="margin-bottom:24px">
+  <div style="flex:1;min-width:200px"><label for="code">Certificate ID</label><input id="code" name="code" type="text" value="<%= code %>"></div>
+  <button class="btn" style="align-self:flex-end">Check</button>
+</form>
+<% if (code && cert) { %>
+  <div class="panel cert-ok"><h2>Valid certificate</h2><p><strong><%= cert.student %></strong> completed <strong><%= cert.course %></strong> on <%= fmtDate(cert.issued_at) %>.</p><p class="muted small">Certificate ID <%= cert.code %></p></div>
+<% } else if (code) { %>
+  <div class="flash error">No certificate was found with ID <%= code %>. Check the ID and try again.</div>
+<% } %>
+</div></main>
+<%- include('partials/foot') %>

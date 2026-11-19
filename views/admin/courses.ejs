@@ -1,0 +1,11 @@
+<%- include('../partials/admin-top', { nav: '/admin/courses' }) %>
+<div class="spread"><h1>Courses</h1><a class="btn" href="/admin/courses/new">New course</a></div>
+<% if (!courses.length) { %><div class="panel"><p>You haven't created a course yet.</p><a class="btn" href="/admin/courses/new">Create your first course</a></div><% } else { %>
+<div class="table"><table><thead><tr><th>Course</th><th>Price</th><th>Lessons</th><th>Students</th><th>Status</th></tr></thead><tbody>
+<% courses.forEach(c => { %>
+<tr><td><a href="/admin/courses/<%= c.id %>"><strong><%= c.title %></strong></a></td>
+<td><%= [c.price_usd_cents ? money(c.price_usd_cents,'USD') : null, c.price_egp_cents ? money(c.price_egp_cents,'EGP') : null].filter(Boolean).join(' / ') || 'Free' %></td>
+<td><%= c.lessons %></td><td><%= c.students %></td>
+<td><span class="tag <%= c.published ? 'on' : 'warn' %>"><%= c.published ? 'Published' : 'Draft' %></span></td></tr>
+<% }) %></tbody></table></div><% } %>
+<%- include('../partials/admin-bottom') %>

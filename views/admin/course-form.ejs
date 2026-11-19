@@ -1,0 +1,7 @@
+<%- include('../partials/admin-top', { nav: '/admin/courses' }) %>
+<h1>New course</h1>
+<form method="post" action="/admin/courses" enctype="multipart/form-data" class="panel" style="max-width:760px">
+  <%- include('_course-fields') %>
+  <button class="btn">Create course</button>
+</form>
+<%- include('../partials/admin-bottom') %>

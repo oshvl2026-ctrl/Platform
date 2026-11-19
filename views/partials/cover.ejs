@@ -1,0 +1,1 @@
+<div class="cover"><% if (item.image_path) { %><img src="/img/<%= item.image_path %>" alt=""><% } else { %><div class="initials"><%= item.title.split(/\s+/).slice(0,3).map(w => w[0]).join('').toUpperCase() %></div><% } %></div>

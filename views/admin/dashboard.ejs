@@ -1,0 +1,33 @@
+<%- include('../partials/admin-top', { nav: '/admin' }) %>
+<h1>Dashboard</h1>
+<% if (!stripeOn || !paymobOn) { %>
+<div class="flash error">
+  <% if (!stripeOn && !paymobOn) { %>Payments are off. Add your Stripe and Paymob keys in your hosting settings to start selling (see the setup guide).
+  <% } else if (!stripeOn) { %>Stripe is not set up, so international card payments are off.
+  <% } else { %>Paymob is not set up, so local payments are off.<% } %>
+</div>
+<% } %>
+<div class="stats">
+  <div><b><%= revenue.length ? revenue.map(r => money(r.total, r.currency)).join(' + ') : '0' %></b><span>All-time revenue</span></div>
+  <div><b><%= revenue30.length ? revenue30.map(r => money(r.total, r.currency)).join(' + ') : '0' %></b><span>Last 30 days</span></div>
+  <div><b><%= stats.students %></b><span>Students</span></div>
+  <div><b><%= stats.enrollments %></b><span>Enrollments</span></div>
+  <div><b><%= stats.certificates %></b><span>Certificates issued</span></div>
+</div>
+<div class="grid2">
+  <div>
+    <div class="spread"><h2>Recent sales</h2><a class="small" href="/admin/orders">All orders</a></div>
+    <% if (!recent.length) { %><p class="muted">No sales yet.</p><% } else { %>
+    <div class="table"><table><tbody>
+    <% recent.forEach(o => { %><tr><td><strong><%= o.name %></strong><br><span class="muted small"><%= o.item_title %></span></td><td><%= o.amount_cents ? money(o.amount_cents, o.currency) : 'Free' %><br><span class="muted small"><%= fmtDate(o.paid_at) %></span></td></tr><% }) %>
+    </tbody></table></div><% } %>
+  </div>
+  <div>
+    <div class="spread"><h2>Courses by students</h2><a class="small" href="/admin/courses/new">New course</a></div>
+    <% if (!top.length) { %><p class="muted">Create a course to see it here.</p><% } else { %>
+    <div class="table"><table><tbody>
+    <% top.forEach(c => { %><tr><td><a href="/courses/<%= c.slug %>"><%= c.title %></a></td><td><%= c.n %></td></tr><% }) %>
+    </tbody></table></div><% } %>
+  </div>
+</div>
+<%- include('../partials/admin-bottom') %>

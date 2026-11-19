@@ -1,0 +1,23 @@
+<%- include('partials/head') %>
+<main><div class="wrap">
+<%- include('partials/flash') %>
+<div class="spread"><h1>My learning</h1><a href="/orders" class="small">Purchase history</a></div>
+<% if (!courses.length) { %>
+  <div class="panel"><h2>You haven't enrolled yet</h2><p class="muted">Pick a course to get started.</p><a class="btn" href="/">Browse courses</a></div>
+<% } else { %>
+<div class="tiles" style="margin-top:12px">
+<% courses.forEach(c => { %>
+  <div class="tile">
+    <a href="/learn/<%= c.slug %>" style="color:inherit;text-decoration:none"><%- include('partials/cover', { item: c }) %></a>
+    <div class="body">
+      <h3><a href="/learn/<%= c.slug %>" style="color:inherit;text-decoration:none"><%= c.title %></a></h3>
+      <div class="ruler thin" style="margin:10px 0 6px"><span style="width:<%= c.progress.percent %>%"></span></div>
+      <div class="spread small"><span class="muted"><%= c.progress.done %> of <%= c.progress.total %> lessons</span>
+      <% if (c.certificate) { %><a href="/certificates/<%= c.certificate.code %>.pdf" target="_blank">Download certificate</a><% } %></div>
+    </div>
+  </div>
+<% }) %>
+</div>
+<% } %>
+</div></main>
+<%- include('partials/foot') %>

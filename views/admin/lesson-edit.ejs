@@ -1,0 +1,79 @@
+<%- include('../partials/admin-top', { nav: '/admin/courses' }) %>
+<p class="small"><a href="/admin/courses/<%= course.id %>#curriculum">Back to <%= course.title %></a></p>
+<div class="spread"><h1><%= lesson.title %></h1><a class="btn quiet" href="/learn/<%= course.slug %>/<%= lesson.id %>" target="_blank">Preview as student</a></div>
+<p><span class="tag"><%= { video: 'Video lesson', document: 'Document lesson', text: 'Reading', quiz: 'Quiz' }[lesson.type] %></span></p>
+
+<form method="post" action="/admin/lessons/<%= lesson.id %>" enctype="multipart/form-data" class="panel" style="max-width:820px" id="lessonform">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="grid2">
+    <div class="field"><label for="title">Lesson title</label><input id="title" name="title" type="text" value="<%= lesson.title %>" required></div>
+    <div class="field"><label for="section">Section</label><select id="section" name="section_id"><% sections.forEach(s => { %><option value="<%= s.id %>" <%= s.id === lesson.section_id ? 'selected' : '' %>><%= s.title %></option><% }) %></select></div>
+  </div>
+
+  <% if (lesson.type === 'video') { %>
+    <div class="field"><label for="video_url">Video link <span class="hint">Paste a YouTube (unlisted), Vimeo, Loom or Bunny Stream link. Best for large videos.</span></label>
+      <input id="video_url" name="video_url" type="url" value="<%= lesson.video_url || '' %>" placeholder="https://vimeo.com/123456789"></div>
+    <% if (lesson.video_url && !embed) { %><div class="flash error">That link isn't a video address we recognise. Use the share link from YouTube, Vimeo, Loom or Bunny.</div><% } %>
+    <div class="field"><label for="file">Or upload a video file <span class="hint">MP4 recommended. An uploaded file is used instead of the link.</span></label><input id="file" name="file" type="file" accept="video/*"></div>
+    <% if (lesson.file_path) { %><p class="small">Current file: <strong><%= lesson.file_name %></strong></p><label class="check field"><input type="checkbox" name="remove_file"> Remove uploaded video</label><% } %>
+  <% } %>
+
+  <% if (lesson.type === 'document' || lesson.type === 'text') { %>
+    <div class="field"><label for="file"><%= lesson.type === 'document' ? 'Document' : 'Attachment (optional)' %> <span class="hint">PDF, Word, PowerPoint or Excel. Word and PowerPoint files are turned into a page-by-page view students can read in the browser. Large slide decks can take a minute.</span></label>
+      <input id="file" name="file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.pps,.ppsx,.odt,.odp,.xls,.xlsx,.rtf,.txt"></div>
+    <% if (lesson.file_path) { %>
+      <p class="small">Current file: <strong><%= lesson.file_name %></strong> <%= lesson.pdf_path ? '(browser view ready)' : '(download only)' %></p>
+      <label class="check field"><input type="checkbox" name="remove_file"> Remove this file</label>
+    <% } %>
+    <label class="check field"><input type="checkbox" name="allow_download" <%= lesson.allow_download ? 'checked' : '' %>> Let students download the original file</label>
+  <% } else { %><input type="hidden" name="allow_download" value="<%= lesson.allow_download ? 'on' : '' %>"><% } %>
+
+  <% if (lesson.type === 'quiz') { %>
+    <div class="field" style="max-width:240px"><label for="pp">Pass mark (%)</label><input id="pp" name="pass_percent" type="number" min="0" max="100" value="<%= lesson.pass_percent %>"></div>
+  <% } else { %><input type="hidden" name="pass_percent" value="<%= lesson.pass_percent %>"><% } %>
+
+  <div class="field"><label for="content"><%= lesson.type === 'text' ? 'Lesson text' : 'Notes shown with this lesson (optional)' %> <span class="hint">Supports Markdown: **bold**, ## headings, - lists, [links](https://...)</span></label>
+    <textarea id="content" name="content" rows="<%= lesson.type === 'text' ? 16 : 6 %>"><%= lesson.content %></textarea></div>
+  <label class="check field"><input type="checkbox" name="free_preview" <%= lesson.free_preview ? 'checked' : '' %>> Free preview: anyone can open this lesson before buying</label>
+  <button class="btn" id="savebtn">Save lesson</button>
+  <span class="muted small" id="saving" hidden>Uploading and processing your file. Keep this tab open.</span>
+</form>
+<script>document.getElementById('lessonform').addEventListener('submit', () => { document.getElementById('saving').hidden = false; document.getElementById('savebtn').disabled = true; });</script>
+
+<% if (lesson.type === 'quiz') { %>
+<h2 id="questions" style="margin-top:36px">Questions</h2>
+<p class="muted small">Pick the correct answer with the round button next to it.</p>
+<div style="max-width:820px">
+<% questions.forEach((q, qi) => { %>
+  <form method="post" action="/admin/questions/<%= q.id %>" class="qcard">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="field"><label for="q<%= q.id %>">Question <%= qi + 1 %></label><input id="q<%= q.id %>" name="question" type="text" value="<%= q.question %>" required></div>
+    <% for (let i = 0; i < Math.max(4, q.options.length); i++) { %>
+      <div class="optrow"><input type="radio" name="correct" value="<%= i %>" <%= i === q.correct_index ? 'checked' : '' %> aria-label="Correct answer <%= i + 1 %>"><input type="text" name="options" value="<%= q.options[i] || '' %>" placeholder="Answer <%= i + 1 %>" aria-label="Answer <%= i + 1 %>"></div>
+    <% } %>
+    <div class="field"><label for="e<%= q.id %>">Explanation <span class="hint">Shown after the student submits (optional)</span></label><input id="e<%= q.id %>" name="explanation" type="text" value="<%= q.explanation %>"></div>
+    <div class="row">
+      <button class="btn small" name="action" value="save">Save question</button>
+      <button class="iconbtn" name="action" value="up" title="Move up" <%= qi === 0 ? 'disabled' : '' %>>&uarr;</button>
+      <button class="iconbtn" name="action" value="down" title="Move down" <%= qi === questions.length - 1 ? 'disabled' : '' %>>&darr;</button>
+      <button class="btn small danger" name="action" value="delete" formnovalidate onclick="return confirm('Delete this question?')">Delete</button>
+    </div>
+  </form>
+<% }) %>
+  <form method="post" action="/admin/lessons/<%= lesson.id %>/questions" class="qcard" style="border-style:dashed">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <h3>Add a question</h3>
+    <div class="field"><label for="nq">Question</label><input id="nq" name="question" type="text" required></div>
+    <% for (let i = 0; i < 4; i++) { %>
+      <div class="optrow"><input type="radio" name="correct" value="<%= i %>" <%= i === 0 ? 'checked' : '' %> aria-label="Correct answer <%= i + 1 %>"><input type="text" name="options" placeholder="Answer <%= i + 1 %><%= i < 2 ? '' : ' (optional)' %>" <%= i < 2 ? 'required' : '' %> aria-label="Answer <%= i + 1 %>"></div>
+    <% } %>
+    <div class="field"><label for="ne">Explanation (optional)</label><input id="ne" name="explanation" type="text"></div>
+    <button class="btn small">Add question</button>
+  </form>
+</div>
+<% } %>
+
+<form method="post" action="/admin/lessons/<%= lesson.id %>/action" style="margin-top:32px" onsubmit="return confirm('Delete this lesson? Student progress on it will be removed.')">
+  <input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn danger" name="action" value="delete">Delete lesson</button>
+</form>
+<%- include('../partials/admin-bottom') %>

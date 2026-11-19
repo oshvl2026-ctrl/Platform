@@ -1,0 +1,13 @@
+<input type="hidden" name="_csrf" value="<%= csrf %>">
+<div class="field"><label for="title">Course title</label><input id="title" name="title" type="text" required value="<%= course.title || '' %>"></div>
+<div class="field"><label for="subtitle">Short description <span class="hint">One line shown on the course card</span></label><input id="subtitle" name="subtitle" type="text" value="<%= course.subtitle || '' %>"></div>
+<div class="field"><label for="description">Course page text <span class="hint">What students will learn, who it's for. Supports Markdown: **bold**, ## headings, - lists</span></label><textarea id="description" name="description" rows="8"><%= course.description || '' %></textarea></div>
+<div class="grid2">
+  <div class="field"><label for="pu">Price in USD (card) <span class="hint">0 for free. Leave 0 to hide card payment</span></label><input id="pu" name="price_usd" type="number" step="0.01" min="0" value="<%= ((course.price_usd_cents || 0) / 100) %>"></div>
+  <div class="field"><label for="pe">Price in EGP (Paymob) <span class="hint">0 to hide local payment</span></label><input id="pe" name="price_egp" type="number" step="0.01" min="0" value="<%= ((course.price_egp_cents || 0) / 100) %>"></div>
+</div>
+<div class="field"><label for="image">Cover image <span class="hint">16:9 works best, e.g. 1600×900</span></label><input id="image" name="image" type="file" accept="image/*">
+<% if (course.image_path) { %><label class="check" style="margin-top:8px"><input type="checkbox" name="remove_image"> Remove current image</label><% } %></div>
+<% if (!isNew) { %><div class="field"><label for="slug">Web address</label><input id="slug" name="slug" type="text" value="<%= course.slug %>"><span class="hint"><%= site.baseUrl %>/courses/<%= course.slug %></span></div><% } %>
+<label class="check field"><input type="checkbox" name="cert_enabled" <%= (isNew || course.cert_enabled) ? 'checked' : '' %>> Give a certificate when a student finishes every lesson</label>
+<label class="check field"><input type="checkbox" name="published" <%= course.published ? 'checked' : '' %>> Published (visible in the store)</label>

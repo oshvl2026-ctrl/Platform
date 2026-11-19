@@ -1,0 +1,15 @@
+<%- include('../partials/head') %>
+<main><div class="wrap" style="max-width:520px">
+<h1>My account</h1>
+<%- include('../partials/flash') %>
+<form method="post" action="/account" class="panel">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="field"><label for="name">Full name <span class="hint">Shown on your certificates</span></label><input id="name" name="name" type="text" value="<%= user.name %>" required></div>
+  <div class="field"><label>Email</label><input type="email" value="<%= user.email %>" disabled></div>
+  <h3 style="margin-top:24px">Change password</h3>
+  <div class="field"><label for="cp">Current password</label><input id="cp" name="current_password" type="password" autocomplete="current-password"></div>
+  <div class="field"><label for="np">New password</label><input id="np" name="new_password" type="password" minlength="8" autocomplete="new-password"></div>
+  <button class="btn">Save changes</button>
+</form>
+</div></main>
+<%- include('../partials/foot') %>

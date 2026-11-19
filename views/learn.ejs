@@ -1,0 +1,102 @@
+<%- include('partials/head') %>
+<div class="player">
+  <aside aria-label="Course contents">
+    <div class="course-name">
+      <a href="/courses/<%= course.slug %>"><%= course.title %></a>
+      <% if (progress && access) { %>
+        <div class="ruler" style="margin:14px 0 6px"><span style="width:<%= progress.percent %>%"></span></div>
+        <div class="small muted"><%= progress.percent %>% complete</div>
+        <% if (certificate) { %><a class="btn small" style="margin-top:12px" href="/certificates/<%= certificate.code %>.pdf" target="_blank">Download certificate</a><% } %>
+      <% } %>
+    </div>
+    <nav class="toc">
+      <% sections.forEach(s => { %>
+        <h4><%= s.title %></h4>
+        <% s.lessons.forEach(l => { const open = access || l.free_preview; %>
+          <a href="<%= open ? '/learn/' + course.slug + '/' + l.id : '/courses/' + course.slug %>" class="<%= l.id === lesson.id ? 'current' : '' %>" <%= l.id === lesson.id ? 'aria-current=page' : '' %>>
+            <span class="tick <%= done.has(l.id) ? 'done' : '' %>" aria-hidden="true"></span>
+            <span><%= l.title %><span class="sr-only"><%= done.has(l.id) ? ' (completed)' : '' %></span></span>
+            <% if (!open) { %><span class="lock">Locked</span><% } %>
+          </a>
+        <% }) %>
+      <% }) %>
+    </nav>
+  </aside>
+  <main><div class="lesson-wrap">
+    <%- include('partials/flash') %>
+    <% if (!access) { %><div class="flash success">You're watching a free preview. <a href="/courses/<%= course.slug %>">Get the full course</a>.</div><% } %>
+    <h1 style="font-size:2rem"><%= lesson.title %></h1>
+
+    <% if (lesson.type === 'video') { %>
+      <% if (lesson.file_path) { %>
+        <div class="stage"><video controls playsinline controlsList="nodownload" preload="metadata" src="/media/<%= lesson.id %>/video"></video></div>
+      <% } else if (embed) { %>
+        <div class="stage"><iframe src="<%= embed %>" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen title="<%= lesson.title %>"></iframe></div>
+      <% } else { %><p class="muted">The video for this lesson is coming soon.</p><% } %>
+    <% } %>
+
+    <% if (lesson.type === 'document' || (lesson.type === 'text' && lesson.file_path)) { %>
+      <% if (lesson.pdf_path) { %>
+        <div class="docview" id="docview" data-src="/media/<%= lesson.id %>/view" tabindex="0" aria-label="<%= lesson.file_name %>"><p class="muted" style="padding:20px">Loading pages…</p></div>
+        <p class="small row" style="margin-top:10px"><span class="muted" id="pagecount"></span>
+        <button type="button" class="linkbtn small" id="fullscreen">Full screen</button>
+        <% if (lesson.allow_download) { %><a href="/media/<%= lesson.id %>/download">Download <%= lesson.file_name %></a><% } %></p>
+        <script type="module" src="/viewer.js"></script>
+      <% } else if (lesson.file_path && lesson.allow_download) { %>
+        <div class="panel"><p>This lesson includes <strong><%= lesson.file_name %></strong>.</p><a class="btn" href="/media/<%= lesson.id %>/download">Download file</a></div>
+      <% } else if (lesson.type === 'document') { %><p class="muted">The file for this lesson is coming soon.</p><% } %>
+    <% } %>
+
+    <% if (lesson.content) { %><div class="prose" style="margin-top:24px"><%- md(lesson.content) %></div><% } %>
+
+    <% if (lesson.type === 'quiz') { %>
+      <% if (!access) { %><p class="muted">Enroll to take this quiz.</p>
+      <% } else if (!questions.length) { %><p class="muted">This quiz has no questions yet.</p>
+      <% } else { const reviewing = showResult && lastAttempt; %>
+        <% if (reviewing) { %>
+          <div class="panel score" style="margin-bottom:24px">
+            <b><%= lastAttempt.score %>%</b>
+            <div><strong><%= lastAttempt.passed ? 'You passed.' : 'Not quite there yet.' %></strong><br><span class="muted small">You need <%= lesson.pass_percent %>% to pass. <%= lastAttempt.passed ? 'This lesson is marked complete.' : 'Review the answers below and try again.' %></span></div>
+          </div>
+        <% } else if (done.has(lesson.id)) { %>
+          <div class="flash success">You've already passed this quiz. You can retake it any time.</div>
+        <% } %>
+        <form method="post" action="/learn/<%= course.slug %>/<%= lesson.id %>/quiz" class="panel">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <% questions.forEach((q, qi) => { const picked = reviewing ? lastAttempt.answers[qi] : null; %>
+          <div class="q"><fieldset>
+            <legend><%= qi + 1 %>. <%= q.question %></legend>
+            <% q.options.forEach((o, oi) => { const cls = reviewing ? (oi === q.correct_index ? 'right' : (oi === picked ? 'wrong' : '')) : ''; %>
+              <label class="opt <%= cls %>"><input type="radio" name="q<%= q.id %>" value="<%= oi %>" required <%= picked === oi ? 'checked' : '' %>> <span><%= o %></span></label>
+            <% }) %>
+            <% if (reviewing && q.explanation) { %><p class="small muted" style="margin:6px 0 0"><%= q.explanation %></p><% } %>
+          </fieldset></div>
+          <% }) %>
+          <button class="btn"><%= reviewing || done.has(lesson.id) ? 'Retake quiz' : 'Submit answers' %></button>
+        </form>
+      <% } %>
+    <% } %>
+
+    <div class="lesson-foot spread">
+      <div class="row">
+        <% if (prev) { %><a class="btn quiet" href="/learn/<%= course.slug %>/<%= prev.id %>">Previous lesson</a><% } %>
+      </div>
+      <div class="row">
+        <% if (access && user && lesson.type !== 'quiz') { %>
+          <% if (done.has(lesson.id)) { %>
+            <span class="tag on">Completed</span>
+            <% if (next) { %><a class="btn" href="/learn/<%= course.slug %>/<%= next.id %>">Next lesson</a><% } %>
+          <% } else { %>
+            <form method="post" action="/learn/<%= course.slug %>/<%= lesson.id %>/complete" class="inline">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <button class="btn"><%= next ? 'Mark complete and continue' : 'Mark complete' %></button>
+            </form>
+          <% } %>
+        <% } else if (next && (access || next.free_preview)) { %>
+          <a class="btn" href="/learn/<%= course.slug %>/<%= next.id %>">Next lesson</a>
+        <% } %>
+      </div>
+    </div>
+  </div></main>
+</div>
+</body></html>

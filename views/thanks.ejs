@@ -1,0 +1,17 @@
+<%- include('partials/head') %>
+<main><div class="wrap narrow">
+<% if (order.status === 'paid') { %>
+  <h1>You're in.</h1>
+  <p>Payment of <%= money(order.amount_cents, order.currency) %> for <strong><%= order.item_title %></strong> is confirmed.</p>
+  <a class="btn" href="<%= course ? '/learn/' + course.slug : '/my-courses' %>">Start learning</a>
+<% } else if (order.status === 'failed') { %>
+  <h1>Payment didn't go through</h1>
+  <p class="muted">You have not been charged. You can try again with another card or payment method.</p>
+  <a class="btn" href="/">Back to courses</a>
+<% } else { %>
+  <h1>Confirming your payment</h1>
+  <p class="muted">This usually takes a few seconds. This page refreshes on its own.</p>
+  <script>setTimeout(() => location.reload(), 4000)</script>
+<% } %>
+</div></main>
+<%- include('partials/foot') %>

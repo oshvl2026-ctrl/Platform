@@ -1,0 +1,42 @@
+<%- include('partials/head') %>
+<main><div class="wrap">
+<%- include('partials/flash') %>
+<% if (!course.published) { %><p><span class="tag warn">Draft: only admins can see this page</span></p><% } %>
+<div class="course-head">
+  <div>
+    <h1><%= course.title %></h1>
+    <% if (course.subtitle) { %><p style="font-size:1.2rem" class="muted"><%= course.subtitle %></p><% } %>
+    <p class="muted small"><%= lessonCount %> lessons in <%= sections.length %> sections<% if (course.cert_enabled) { %>, certificate on completion<% } %></p>
+    <div class="prose" style="margin-top:28px"><%- md(course.description) %></div>
+    <h2 style="margin-top:40px">What's inside</h2>
+    <div class="syllabus">
+      <% sections.forEach((s, i) => { %>
+      <details <%= i === 0 ? 'open' : '' %>>
+        <summary><span><%= s.title %></span><span class="muted small"><%= s.lessons.length %> lessons</span></summary>
+        <ol>
+          <% s.lessons.forEach(l => { %>
+          <li><%- include('partials/icon', { type: l.type }) %>
+            <% if (enrolled || l.free_preview) { %><a href="/learn/<%= course.slug %>/<%= l.id %>"><%= l.title %></a><% } else { %><span><%= l.title %></span><% } %>
+            <% if (l.free_preview && !enrolled) { %><span class="tag on" style="margin-left:auto">Free preview</span><% } %>
+          </li>
+          <% }) %>
+        </ol>
+      </details>
+      <% }) %>
+    </div>
+  </div>
+  <aside class="buybox panel">
+    <%- include('partials/cover', { item: course }) %>
+    <% if (enrolled) { %>
+      <p><strong>You're enrolled.</strong> <%= progress.done %> of <%= progress.total %> lessons done.</p>
+      <div class="ruler" style="margin-bottom:18px"><span style="width:<%= progress.percent %>%"></span></div>
+      <a class="btn block" href="/learn/<%= course.slug %>"><%= progress.done ? 'Continue learning' : 'Start learning' %></a>
+    <% } else { %>
+      <p style="margin-bottom:14px"><%- include('partials/price', { item: course }) %></p>
+      <a class="btn block" href="/checkout/course/<%= course.slug %>"><%= (course.price_usd_cents || course.price_egp_cents) ? 'Buy this course' : 'Enroll for free' %></a>
+      <p class="muted small" style="margin:12px 0 0">Lifetime access. Learn on any device.</p>
+    <% } %>
+  </aside>
+</div>
+</div></main>
+<%- include('partials/foot') %>

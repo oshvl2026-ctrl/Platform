@@ -1,0 +1,49 @@
+<%- include('partials/head') %>
+<main><div class="wrap narrow">
+<%- include('partials/flash') %>
+<h1>Checkout</h1>
+<div class="panel stack">
+  <div class="spread"><div><h2 style="margin:0"><%= item.title %></h2><span class="muted small"><%= item.item_type === 'bundle' ? item.courses.length + '-course bundle' : 'Online course' %></span></div></div>
+  <form method="get" class="row" action="">
+    <div style="flex:1;min-width:200px"><label for="coupon">Coupon code</label><input id="coupon" name="coupon" type="text" value="<%= couponCode %>" autocomplete="off"></div>
+    <button class="btn quiet" style="align-self:flex-end">Apply</button>
+  </form>
+  <% if (couponError) { %><div class="flash error" style="margin:0"><%= couponError %></div><% } %>
+  <% if (coupon) { %><div class="flash success" style="margin:0">Coupon <strong><%= coupon.code %></strong> applied.</div><% } %>
+</div>
+
+<% const free = prices.USD.final === 0 && prices.EGP.final === 0; %>
+<% if (free) { %>
+  <form method="post" class="panel" style="margin-top:20px">
+    <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="coupon" value="<%= couponCode %>"><input type="hidden" name="provider" value="free">
+    <p><strong>Total: Free</strong></p>
+    <button class="btn block">Enroll now</button>
+  </form>
+<% } else { %>
+  <div class="stack" style="margin-top:20px">
+  <% if (stripeOn) { %>
+    <form method="post" class="panel">
+      <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="coupon" value="<%= couponCode %>"><input type="hidden" name="provider" value="stripe">
+      <div class="spread"><h3 style="margin:0">Pay by card (international)</h3>
+        <span class="price"><% if (prices.USD.final !== prices.USD.base) { %><s><%= money(prices.USD.base, stripeCurrency) %></s><% } %><%= money(prices.USD.final, stripeCurrency) %></span></div>
+      <p class="muted small">Visa, Mastercard, Apple Pay and Google Pay, handled securely by Stripe.</p>
+      <button class="btn block">Pay <%= money(prices.USD.final, stripeCurrency) %> by card</button>
+    </form>
+  <% } %>
+  <% if (paymobOn) { %>
+    <form method="post" class="panel">
+      <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="coupon" value="<%= couponCode %>"><input type="hidden" name="provider" value="paymob">
+      <div class="spread"><h3 style="margin:0">Pay locally in <%= paymobCurrency %></h3>
+        <span class="price"><% if (prices.EGP.final !== prices.EGP.base) { %><s><%= money(prices.EGP.base, paymobCurrency) %></s><% } %><%= money(prices.EGP.final, paymobCurrency) %></span></div>
+      <p class="muted small">Local cards, mobile wallets and other methods, handled securely by Paymob.</p>
+      <div class="field"><label for="phone">Mobile number</label><input id="phone" name="phone" type="tel" required placeholder="+20 10 0000 0000" autocomplete="tel"></div>
+      <button class="btn block">Pay <%= money(prices.EGP.final, paymobCurrency) %></button>
+    </form>
+  <% } %>
+  <% if (!stripeOn && !paymobOn) { %>
+    <div class="panel"><h3>Payments aren't switched on yet</h3><p class="muted">This item can't be bought online right now. Please contact us to enroll.</p></div>
+  <% } %>
+  </div>
+<% } %>
+</div></main>
+<%- include('partials/foot') %>

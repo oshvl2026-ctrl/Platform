@@ -1,0 +1,23 @@
+<%- include('partials/head') %>
+<main><div class="wrap">
+<%- include('partials/flash') %>
+<div class="course-head">
+  <div>
+    <h1><%= bundle.title %></h1>
+    <div class="prose"><%- md(bundle.description) %></div>
+    <h2 style="margin-top:32px">Courses in this bundle</h2>
+    <div class="tiles">
+      <% bundle.courses.forEach(c => { %>
+      <a class="tile" href="/courses/<%= c.slug %>"><%- include('partials/cover', { item: c }) %><div class="body"><h3><%= c.title %></h3><p class="muted small"><%= c.subtitle %></p></div></a>
+      <% }) %>
+    </div>
+  </div>
+  <aside class="buybox panel">
+    <p style="margin-bottom:4px"><%- include('partials/price', { item: bundle }) %></p>
+    <% if (separate.USD > bundle.price_usd_cents && bundle.price_usd_cents) { %><p class="muted small">Bought separately: <%= money(separate.USD, 'USD') %><% if (separate.EGP) { %> or <%= money(separate.EGP, 'EGP') %><% } %></p><% } %>
+    <% if (owned) { %><a class="btn block" href="/my-courses">Go to my courses</a>
+    <% } else { %><a class="btn block" href="/checkout/bundle/<%= bundle.slug %>">Buy the bundle</a><% } %>
+  </aside>
+</div>
+</div></main>
+<%- include('partials/foot') %>

@@ -1,0 +1,11 @@
+<%- include('../partials/head') %>
+<main><div class="wrap" style="max-width:440px">
+<h1>Choose a new password</h1>
+<%- include('../partials/flash') %>
+<form method="post" class="panel">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="field"><label for="password">New password <span class="hint">At least 8 characters</span></label><input id="password" name="password" type="password" required minlength="8" autocomplete="new-password"></div>
+  <button class="btn block">Save password</button>
+</form>
+</div></main>
+<%- include('../partials/foot') %>

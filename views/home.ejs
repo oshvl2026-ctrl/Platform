@@ -1,0 +1,38 @@
+<%- include('partials/head') %>
+<main><div class="wrap">
+<%- include('partials/flash') %>
+<section class="hero">
+  <h1>Learn something you'll use tomorrow.</h1>
+  <p>Practical courses with video lessons, worksheets and quizzes. Learn at your own pace and earn a certificate when you finish.</p>
+</section>
+<% if (!courses.length) { %>
+  <div class="panel"><h2>No courses yet</h2><p class="muted">New courses will appear here as soon as they're published.</p>
+  <% if (user && user.role === 'admin') { %><a class="btn" href="/admin/courses/new">Create your first course</a><% } %></div>
+<% } else { %>
+<div class="tiles">
+  <% courses.forEach(c => { %>
+  <a class="tile" href="/courses/<%= c.slug %>">
+    <%- include('partials/cover', { item: c }) %>
+    <div class="body">
+      <h3><%= c.title %></h3>
+      <% if (c.subtitle) { %><p class="muted small" style="margin-bottom:8px"><%= c.subtitle %></p><% } %>
+      <div class="spread"><%- include('partials/price', { item: c }) %><span class="muted small"><%= c.lesson_count %> lessons</span></div>
+    </div>
+  </a>
+  <% }) %>
+</div>
+<% } %>
+<% if (bundles.length) { %>
+<h2 class="section-title">Bundles</h2>
+<div class="tiles">
+  <% bundles.forEach(b => { %>
+  <a class="tile panel" href="/bundles/<%= b.slug %>">
+    <h3><%= b.title %></h3>
+    <p class="muted small"><%= b.courses.length %> courses: <%= b.courses.map(c => c.title).join(', ') %></p>
+    <%- include('partials/price', { item: b }) %>
+  </a>
+  <% }) %>
+</div>
+<% } %>
+</div></main>
+<%- include('partials/foot') %>

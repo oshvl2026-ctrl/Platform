@@ -1,0 +1,14 @@
+<%- include('../partials/head') %>
+<main><div class="wrap" style="max-width:440px">
+<h1>Reset your password</h1>
+<% if (typeof sent !== 'undefined' && sent) { %>
+  <div class="flash success">If that email has an account, a reset link is on its way. It works for one hour.</div>
+<% } else { %>
+<form method="post" action="/forgot" class="panel">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required></div>
+  <button class="btn block">Send reset link</button>
+</form>
+<% } %>
+</div></main>
+<%- include('../partials/foot') %>

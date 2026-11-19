@@ -1,0 +1,10 @@
+<%- include('../partials/admin-top', { nav: '/admin/bundles' }) %>
+<div class="spread"><h1>Bundles</h1><a class="btn" href="/admin/bundles/new">New bundle</a></div>
+<p class="muted">Sell several courses together at one price. Buyers get access to every course in the bundle.</p>
+<% if (bundles.length) { %>
+<div class="table"><table><thead><tr><th>Bundle</th><th>Courses</th><th>Price</th><th>Status</th></tr></thead><tbody>
+<% bundles.forEach(b => { %><tr><td><a href="/admin/bundles/<%= b.id %>"><strong><%= b.title %></strong></a></td><td><%= b.courses.length %></td>
+<td><%= [b.price_usd_cents ? money(b.price_usd_cents,'USD') : null, b.price_egp_cents ? money(b.price_egp_cents,'EGP') : null].filter(Boolean).join(' / ') || 'Free' %></td>
+<td><span class="tag <%= b.published ? 'on' : 'warn' %>"><%= b.published ? 'Published' : 'Draft' %></span></td></tr><% }) %>
+</tbody></table></div><% } %>
+<%- include('../partials/admin-bottom') %>

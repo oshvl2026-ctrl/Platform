@@ -1,0 +1,11 @@
+<%- include('../partials/admin-top', { nav: '/admin/orders' }) %>
+<h1>Orders</h1>
+<p class="row small"><% [['','All'],['paid','Paid'],['pending','Pending'],['failed','Failed']].forEach(([v,l]) => { %><a href="/admin/orders<%= v ? '?status=' + v : '' %>" class="btn small <%= status === v ? '' : 'quiet' %>"><%= l %></a><% }) %></p>
+<div class="table"><table><thead><tr><th>#</th><th>Date</th><th>Student</th><th>Item</th><th>Amount</th><th>Via</th><th>Coupon</th><th>Status</th></tr></thead><tbody>
+<% orders.forEach(o => { %><tr><td><%= o.id %></td><td><%= fmtDate(o.created_at) %></td><td><a href="/admin/students/<%= o.user_id %>"><%= o.name %></a><br><span class="small muted"><%= o.email %></span></td><td><%= o.item_title %></td>
+<td><%= o.amount_cents ? money(o.amount_cents, o.currency) : 'Free' %></td><td><%= o.provider %></td><td><%= o.coupon || '' %></td>
+<td><span class="tag <%= o.status === 'paid' ? 'on' : o.status === 'failed' ? 'bad' : 'warn' %>"><%= o.status %></span>
+<% if (o.status !== 'paid') { %><form method="post" action="/admin/orders/<%= o.id %>/mark-paid" class="inline" onsubmit="return confirm('Only do this if you have confirmed the money arrived. Mark paid and enroll the student?')"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="linkbtn small">Mark paid</button></form><% } %></td></tr><% }) %>
+</tbody></table></div>
+<% if (!orders.length) { %><p class="muted" style="margin-top:12px">No orders here yet.</p><% } %>
+<%- include('../partials/admin-bottom') %>

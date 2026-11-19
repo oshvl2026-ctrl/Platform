@@ -1,0 +1,15 @@
+<%- include('../partials/admin-top', { nav: '/admin/students' }) %>
+<div class="spread"><h1>Students</h1><a class="btn quiet" href="/admin/students/export.csv">Export CSV</a></div>
+<form method="get" class="row" style="margin-bottom:18px"><label class="sr-only" for="q">Search</label><input id="q" name="q" type="search" value="<%= q %>" placeholder="Search name or email" style="max-width:360px"><button class="btn quiet">Search</button></form>
+<div class="table"><table><thead><tr><th>Name</th><th>Email</th><th>Courses</th><th>Spent</th><th>Joined</th></tr></thead><tbody>
+<% students.forEach(s => { %><tr><td><a href="/admin/students/<%= s.id %>"><%= s.name %></a> <% if (s.role === 'admin') { %><span class="tag">Admin</span><% } %></td><td><%= s.email %></td><td><%= s.courses %></td>
+<td><%= [s.spent_usd ? money(s.spent_usd,'USD') : null, s.spent_egp ? money(s.spent_egp,'EGP') : null].filter(Boolean).join(' + ') || '-' %></td><td><%= fmtDate(s.created_at) %></td></tr><% }) %>
+</tbody></table></div>
+<details class="panel" style="margin-top:28px;max-width:640px"><summary><strong>Add a student manually</strong></summary>
+<form method="post" action="/admin/students" style="margin-top:16px">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="grid2"><div class="field"><label for="an">Name</label><input id="an" name="name" type="text" required></div><div class="field"><label for="ae">Email</label><input id="ae" name="email" type="email" required></div></div>
+  <div class="field"><label for="ap">Temporary password</label><input id="ap" name="password" type="text" minlength="8" required></div>
+  <button class="btn">Add student</button>
+</form></details>
+<%- include('../partials/admin-bottom') %>

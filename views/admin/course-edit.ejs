@@ -1,0 +1,58 @@
+<%- include('../partials/admin-top', { nav: '/admin/courses' }) %>
+<div class="spread"><h1><%= course.title %></h1><div class="row"><a class="btn quiet" href="/courses/<%= course.slug %>" target="_blank">Preview page</a><% if (sections.some(s => s.lessons.length)) { %><a class="btn quiet" href="/learn/<%= course.slug %>">Preview lessons</a><% } %></div></div>
+<p><span class="tag <%= course.published ? 'on' : 'warn' %>"><%= course.published ? 'Published' : 'Draft' %></span></p>
+
+<h2 id="curriculum" style="margin-top:28px">Lessons</h2>
+<p class="muted small">Group lessons into sections. Add video, documents (PDF, Word, PowerPoint), reading or a quiz.</p>
+<% sections.forEach((s, si) => { %>
+<div class="curr-section">
+  <header>
+    <form method="post" action="/admin/sections/<%= s.id %>" class="row" style="flex:1">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <label class="sr-only" for="s<%= s.id %>">Section name</label>
+      <input id="s<%= s.id %>" name="title" type="text" value="<%= s.title %>">
+      <button class="btn small quiet" name="action" value="rename">Rename</button>
+      <button class="iconbtn" name="action" value="up" title="Move section up" <%= si === 0 ? 'disabled' : '' %>>&uarr;</button>
+      <button class="iconbtn" name="action" value="down" title="Move section down" <%= si === sections.length - 1 ? 'disabled' : '' %>>&darr;</button>
+      <button class="btn small danger" name="action" value="delete" onclick="return confirm('Delete this section and all its lessons?')">Delete</button>
+    </form>
+  </header>
+  <% s.lessons.forEach((l, li) => { %>
+  <div class="curr-lesson">
+    <%- include('../partials/icon', { type: l.type }) %>
+    <a class="t" href="/admin/lessons/<%= l.id %>"><%= l.title %></a>
+    <% if (l.free_preview) { %><span class="tag on">Free preview</span><% } %>
+    <% if ((l.type === 'video' && !l.file_path && !l.video_url) || (l.type === 'document' && !l.file_path)) { %><span class="tag warn">Needs content</span><% } %>
+    <form method="post" action="/admin/lessons/<%= l.id %>/action" class="row" style="gap:6px">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button class="iconbtn" name="action" value="up" title="Move up" <%= li === 0 ? 'disabled' : '' %>>&uarr;</button>
+      <button class="iconbtn" name="action" value="down" title="Move down" <%= li === s.lessons.length - 1 ? 'disabled' : '' %>>&darr;</button>
+    </form>
+  </div>
+  <% }) %>
+  <form method="post" action="/admin/sections/<%= s.id %>/lessons" class="add-lesson">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <label class="sr-only" for="nl<%= s.id %>">New lesson title</label>
+    <input id="nl<%= s.id %>" name="title" type="text" placeholder="New lesson title" required>
+    <label class="sr-only" for="nt<%= s.id %>">Lesson type</label>
+    <select id="nt<%= s.id %>" name="type"><option value="video">Video</option><option value="document">Document (PDF, Word, PowerPoint)</option><option value="text">Reading</option><option value="quiz">Quiz</option></select>
+    <button class="btn small">Add lesson</button>
+  </form>
+</div>
+<% }) %>
+<form method="post" action="/admin/courses/<%= course.id %>/sections" class="row" style="margin-bottom:40px">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <label class="sr-only" for="ns">New section name</label>
+  <input id="ns" name="title" type="text" placeholder="New section name" style="max-width:320px" required>
+  <button class="btn quiet">Add section</button>
+</form>
+
+<h2>Course details</h2>
+<form method="post" action="/admin/courses/<%= course.id %>" enctype="multipart/form-data" class="panel" style="max-width:760px">
+  <%- include('_course-fields', { isNew: false }) %>
+  <button class="btn">Save details</button>
+</form>
+<form method="post" action="/admin/courses/<%= course.id %>/delete" style="margin-top:28px" onsubmit="return confirm('Delete this course, its lessons and its files? Students will lose access. This cannot be undone.')">
+  <input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn danger">Delete course</button>
+</form>
+<%- include('../partials/admin-bottom') %>

@@ -1,0 +1,2 @@
+<% const parts = []; if (item.price_usd_cents) parts.push(money(item.price_usd_cents, 'USD')); if (item.price_egp_cents) parts.push(money(item.price_egp_cents, 'EGP')); %>
+<span class="price"><%= parts.length ? parts.join(' or ') : 'Free' %></span>
